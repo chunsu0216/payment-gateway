@@ -1,0 +1,33 @@
+spring:
+  profiles:
+    active: test
+  datasource:
+    url: jdbc:mariadb://localhost:3307/pg
+    username: root
+    password: 1234
+  driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+#       show_sql: true
+       format_sql: true
+       use_sql_comments: true
+#       default_batch_fetch_size: 100
+logging.level:
+  org.hibernate.SQL: debug
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    groups-order: DESC
+    operations-sorter: method
+    disable-swagger-default-url: true
+    display-request-duration: true
+  api-docs:
+    path: /api-docs
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  paths-to-match: /api/v1
+# org.hibernate.type: trace
