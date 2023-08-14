@@ -2,16 +2,10 @@ package pg.paymentgateway.dto;
 
 import lombok.Data;
 import org.hibernate.validator.constraints.CreditCardNumber;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import javax.annotation.RegEx;
 import javax.validation.constraints.*;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Date;
 
 @Data
-public class ClientRequestDTO {
+public class ClientOldKeyInRequestDTO {
 
     @NotNull(message = "가맹점 ID는 필수 값입니다.")
     @NotEmpty(message = "가맹점 ID는 필수 값입니다.")
@@ -47,6 +41,8 @@ public class ClientRequestDTO {
     @NotEmpty(message = "비밀번호 앞2자리는 필수 값입니다.")
     @Pattern(regexp = "\\d{2}", message = "올바르지않은 비밀번호 형식입니다.")
     private String password;
+
+    private String installment;
 
     @NotNull(message = "생년월일은 6자리는 필수 값입니다.")
     @NotEmpty(message = "생년월일은 6자리는 필수 값입니다.")

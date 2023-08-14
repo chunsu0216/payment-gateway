@@ -4,18 +4,18 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class ErrorResult {
+public class ErrorResultDTO {
 
     private String errorCode;
     private String errorMessage;
 
     @Builder
-    public ErrorResult(String errorCode, String errorMessage) {
+    public ErrorResultDTO(String errorCode, String errorMessage) {
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
     }
 
-    public ErrorResult() {
+    public ErrorResultDTO() {
 
     }
 }

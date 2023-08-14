@@ -8,7 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import pg.paymentgateway.dto.ClientRequestDTO;
+import pg.paymentgateway.dto.ClientOldKeyInRequestDTO;
 import pg.paymentgateway.service.KeyInService;
 
 @RestController
@@ -19,15 +19,13 @@ public class KeyInController {
     private final KeyInService keyInService;
 
     @PostMapping("/api/v1/card/old-certification")
-    public Object keyIn(@RequestBody @Validated ClientRequestDTO clientRequestDTO, BindingResult bindingResult) {
+    public Object keyIn(@RequestBody @Validated ClientOldKeyInRequestDTO clientRequestDTO, BindingResult bindingResult) {
         log.info("request : {}", clientRequestDTO.toString());
 
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException(bindingResult.getFieldError().getDefaultMessage());
         }
 
-        keyInService.oldCertification(clientRequestDTO);
-
-        return null;
+        return keyInService.oldCertification(clientRequestDTO);
     }
 }
