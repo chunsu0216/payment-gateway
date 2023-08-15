@@ -5,7 +5,7 @@ import org.hibernate.validator.constraints.CreditCardNumber;
 import javax.validation.constraints.*;
 
 @Data
-public class ClientOldKeyInRequestDTO {
+public class ClientKeyInRequestDTO {
 
     @NotNull(message = "가맹점 ID는 필수 값입니다.")
     @NotEmpty(message = "가맹점 ID는 필수 값입니다.")
@@ -37,16 +37,16 @@ public class ClientOldKeyInRequestDTO {
     @NotEmpty(message = "유효기간은 필수 값입니다.")
     private String expireDate;
 
-    @NotNull(message = "비밀번호 앞2자리는 필수 값입니다.")
-    @NotEmpty(message = "비밀번호 앞2자리는 필수 값입니다.")
-    @Pattern(regexp = "\\d{2}", message = "올바르지않은 비밀번호 형식입니다.")
+    //@NotNull(message = "비밀번호 앞2자리는 필수 값입니다.")
+    //@NotEmpty(message = "비밀번호 앞2자리는 필수 값입니다.")
+    //@Pattern(regexp = "\\d{2}", message = "올바르지않은 비밀번호 형식입니다.")
     private String password;
 
     private String installment;
 
-    @NotNull(message = "생년월일은 6자리는 필수 값입니다.")
-    @NotEmpty(message = "생년월일은 6자리는 필수 값입니다.")
-    @Pattern(regexp = "\\d{2}([0]\\d|[1][0-2])([0][1-9]|[1-2]\\d|[3][0-1])", message = "올바르지않은 생년월일입니다.")
+    //@NotNull(message = "생년월일은 6자리는 필수 값입니다.")
+    //@NotEmpty(message = "생년월일은 6자리는 필수 값입니다.")
+    //@Pattern(regexp = "\\d{2}([0]\\d|[1][0-2])([0][1-9]|[1-2]\\d|[3][0-1])", message = "올바르지않은 생년월일입니다.")
     private String userInfo;
 
 }

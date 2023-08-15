@@ -5,5 +5,5 @@ import pg.paymentgateway.entity.ClientRequest;
 
 public interface ClientRequestRepository extends JpaRepository<ClientRequest, Long> {
 
-    ClientRequest findClientRequestByOrderId(String orderId);
+    ClientRequest findClientRequestByOrderIdAndMerchantId(String orderId, String merchantId);
 }
