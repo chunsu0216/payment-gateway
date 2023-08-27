@@ -2,24 +2,20 @@ package pg.paymentgateway.entity;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import pg.paymentgateway.repository.PayRepository;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "PG_PAY")
 @Getter
 public class Pay extends BaseEntity{
     @Id @GeneratedValue
-    private Long id;
+    private Long idx;
     private String transactionId;
     private String method;
+    private String status;
     private String orderId;
-    private String merchantId;
     private Long amount;
     private String orderName;
     private String productName;
@@ -38,16 +34,25 @@ public class Pay extends BaseEntity{
     private String resultMessage;
     private String van;
     private String vanId;
+    private String vanTrxId;
     private String vanResultCode;
     private String vanResultMessage;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MERCHANT_IDX")
+    private Merchant merchant;
+
+    @OneToMany(mappedBy = "pay")
+    private List<ApproveCancel> approveCancels = new ArrayList<>();
+
     @Builder
-    public Pay(Long id, String transactionId, String method, String orderId, String merchantId, Long amount, String orderName, String productName, String cardNumber, String expireDate, String installment, String password, String userInfo, String issuerCardType, String issuerCardName, String purchaseCardType, String purchaseCardName, String cardType, String approvalNumber, String resultCode, String resultMessage, String van, String vanId, String vanResultCode, String vanResultMessage) {
-        this.id = id;
+    public Pay(Long idx, String transactionId, String method, String status, Merchant merchant, String orderId, Long amount, String orderName, String productName, String cardNumber, String expireDate, String installment, String password, String userInfo, String issuerCardType, String issuerCardName, String purchaseCardType, String purchaseCardName, String cardType, String approvalNumber, String resultCode, String resultMessage, String van, String vanId, String vanTrxId, String vanResultCode, String vanResultMessage) {
+        this.idx = idx;
         this.transactionId = transactionId;
         this.method = method;
+        this.status = status;
+        this.merchant = merchant;
         this.orderId = orderId;
-        this.merchantId = merchantId;
         this.amount = amount;
         this.orderName = orderName;
         this.productName = productName;
@@ -66,8 +71,13 @@ public class Pay extends BaseEntity{
         this.resultMessage = resultMessage;
         this.van = van;
         this.vanId = vanId;
+        this.vanTrxId = vanTrxId;
         this.vanResultCode = vanResultCode;
         this.vanResultMessage = vanResultMessage;
+    }
+
+    public void updateStatus(String status){
+        this.status = status;
     }
 
     public Pay() {

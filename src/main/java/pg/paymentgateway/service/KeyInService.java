@@ -12,11 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import pg.paymentgateway.dto.*;
-import pg.paymentgateway.entity.ClientRequest;
-import pg.paymentgateway.entity.Merchant;
-import pg.paymentgateway.entity.Pay;
-import pg.paymentgateway.entity.Van;
+import pg.paymentgateway.entity.*;
 import pg.paymentgateway.exception.ForbiddenException;
+import pg.paymentgateway.repository.ApproveCancelRepository;
 import pg.paymentgateway.repository.ClientRequestRepository;
 import pg.paymentgateway.repository.MerchantRepository;
 import pg.paymentgateway.repository.PayRepository;
@@ -38,6 +36,7 @@ public class KeyInService {
     private final ClientRequestRepository clientRequestRepository;
     private final PayRepository payRepository;
     private final ObjectMapper objectMapper;
+    private final ApproveCancelRepository approveCancelRepository;
 
     private static final String INVALID_EXPIRE_DATE = "올바르지않은 유효기간입니다.";
     private static final String INVALID_BIRTHDAY = "올바르지않은 생년월일입니다.";
@@ -47,11 +46,13 @@ public class KeyInService {
     private static final String DUPLICATION_ORDER_ID = "중복된 주문번호입니다.";
     private static final String OLD_KEYIN_URL = "https://paydev.ksnet.co.kr/kspay/webfep/api/v1/card/pay/oldcert";
     private static final String NON_KEYIN_URL = "https://paydev.ksnet.co.kr/kspay/webfep/api/v1/card/pay/noncert";
+    private static final String CANCEL_URL = "https://paydev.ksnet.co.kr/kspay/webfep/api/v1/card/cancel";
     private static final String RESULT_CODE = "0000";
     private static final String RESULT_MESSAGE = "정상 승인되었습니다.";
+    private static final String RESULT_CANCEL_MESSAGE = "정상 취소되었습니다.";
 
     @Transactional
-    public Object oldCertification(ClientKeyInRequestDTO clientRequestDTO, String method) {
+    public Object keyIn(ClientKeyInRequestDTO clientRequestDTO, String method) {
 
         // 유효기간 검증
         if(!this.validationExpireDate(clientRequestDTO.getExpireDate())){
@@ -71,7 +72,7 @@ public class KeyInService {
         }
 
         // TRANSACTION ID 생성
-        String transactionId = UUID.randomUUID().toString();
+        String transactionId = "T" + UUID.randomUUID().toString();
 
         // 가맹점 ID 검증
         Optional<Merchant> merchant = Optional.ofNullable(merchantRepository.findMerchantByMerchantId(clientRequestDTO.getMerchantId()));
@@ -313,8 +314,9 @@ public class KeyInService {
         return new Pay().builder()
                 .transactionId(transactionId)
                 .method(method)
+                .status("승인")
                 .orderId(clientRequestDTO.getOrderId())
-                .merchantId(merchant.get().getMerchantId())
+                .merchant(merchant.get())
                 .amount(clientRequestDTO.getAmount())
                 .orderName(clientRequestDTO.getOrderName())
                 .productName(clientRequestDTO.getProductName())
@@ -333,11 +335,11 @@ public class KeyInService {
                 .resultMessage(RESULT_MESSAGE)
                 .van(van.getVan())
                 .vanId(van.getVanId())
+                .vanTrxId(ksnetResponse.getData().getTid())
                 .vanResultCode(ksnetResponse.getData().getRespCode())
                 .vanResultMessage(ksnetResponse.getData().getRespMessage())
                 .build();
     }
-
 
     /**
      * 비밀번호 앞 2자리 검증
@@ -378,5 +380,146 @@ public class KeyInService {
             return false;
         }
         return true;
+    }
+
+    @Transactional
+    public Object cancel(ClientKeyInCancelDTO clientRequestDTO) {
+
+        // 가맹점 ID 검증
+        Optional<Merchant> merchant = Optional.ofNullable(merchantRepository.findMerchantByMerchantId(clientRequestDTO.getMerchantId()));
+        if(merchant.isEmpty()){
+            throw new ForbiddenException(FORBIDDEN_MERCHANT);
+        }
+
+        // 거래 ID 검증
+        if(clientRequestDTO.getOrderNumber().isEmpty() && clientRequestDTO.getTransactionId().isEmpty()){
+            throw new IllegalArgumentException("가맹점 주문번호 ID 또는 승인 후 부여한 transactionId를 셋팅하셔야합니다.");
+        }
+
+        Optional<Pay> pay = Optional.ofNullable(payRepository.findPayByTransactionIdOrOrderId(clientRequestDTO.getTransactionId(), clientRequestDTO.getOrderNumber()));
+
+        if(pay.isEmpty()){
+            throw new IllegalArgumentException("원거래 ID 또는 주문번호를 확인할 수 없습니다.");
+        }
+
+        if(pay.get().getAmount() < clientRequestDTO.getAmount()){
+            new IllegalArgumentException("취소 요청 금액이 원거래 승인 금액보다 큽니다.");
+        }
+
+        List<ApproveCancel> approveCancels = pay.get().getApproveCancels();
+
+        long totalCancelAmount = 0;
+        long remainAmount = 0;
+
+        for (ApproveCancel approveCancel : approveCancels) {
+            totalCancelAmount += approveCancel.getAmount();
+        }
+
+        remainAmount = pay.get().getAmount() - totalCancelAmount;
+
+        if(remainAmount == 0){
+            throw new IllegalArgumentException("기취소 거래입니다.");
+        }
+
+        if(clientRequestDTO.getAmount() > remainAmount){
+            throw new IllegalArgumentException("취소 요청 금액이 기취소된 금액보다 큽니다.");
+        }
+
+        String cancelType = "";
+
+        // 취소 거래 내역 확인
+        if(pay.get().getApproveCancels().size() == 0 && pay.get().getAmount() == clientRequestDTO.getAmount()){
+            cancelType = "FULL";
+        }else{
+            cancelType = "PARTIAL";
+        }
+
+        String transactionId = "T" + UUID.randomUUID().toString();
+        KsnetResponse ksnetResponse = callCancelAPI(setCancelDTO(pay.get(), cancelType, clientRequestDTO));
+
+        if (ksnetResponse.getData().getRespCode().equals("0000")) {
+            // 취소 원장 저장
+            approveCancelRepository.save(new ApproveCancel().builder()
+                    .cancelTransactionId(transactionId)
+                    .merchantId(clientRequestDTO.getMerchantId())
+                    .status(cancelType)
+                    .amount(clientRequestDTO.getAmount())
+                    .rootOrderId(pay.get().getOrderId())
+                    .van(pay.get().getVan())
+                    .vanId(pay.get().getVanId())
+                    .vanTrxId(ksnetResponse.getData().getTid())
+                    .vanResultCode(ksnetResponse.getData().getRespCode())
+                    .vanResultMessage(ksnetResponse.getData().getRespMessage())
+                    .pay(pay.get())
+                    .build()
+            );
+
+            if(pay.get().getAmount() == totalCancelAmount + clientRequestDTO.getAmount()){
+                pay.get().updateStatus("승인취소");
+            }
+        }else{
+            throw new IllegalArgumentException(ksnetResponse.getData().getRespMessage());
+        }
+        return new ClientResponseDTO().builder()
+                .resultCode(RESULT_CODE)
+                .resultMessage(RESULT_CANCEL_MESSAGE)
+                .transactionId(transactionId)
+                .build();
+    }
+
+    private KsnetCancelRequestDTO setCancelDTO(Pay pay, String cancelType, ClientKeyInCancelDTO clientRequestDTO){
+
+        if (cancelType.equals("PARTIAL")) {
+            int cancelCount = pay.getApproveCancels().size();
+            if(cancelCount == 0){
+                cancelCount = 1;
+            }else{
+                cancelCount = cancelCount + 1;
+            }
+
+            return new KsnetCancelRequestDTO().builder()
+                    .mid(pay.getVanId())
+                    .cancelType(cancelType)
+                    .orgTradeKeyType("TID")
+                    .orgTradeKey(pay.getVanTrxId())
+                    .cancelTotalAmount(String.valueOf(clientRequestDTO.getAmount()))
+                    .cancelTaxFreeAmount("0")
+                    .cancelSeq(String.valueOf(cancelCount))
+                    .build();
+        }
+
+        return new KsnetCancelRequestDTO().builder()
+                    .mid(pay.getVanId())
+                    .cancelType(cancelType)
+                    .orgTradeKeyType("TID")
+                    .orgTradeKey(pay.getVanTrxId())
+                    .build();
+
+    }
+
+    private KsnetResponse callCancelAPI(KsnetCancelRequestDTO requestDTO){
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        MediaType mediaType = new MediaType("application", "json", Charset.forName("UTF-8"));
+        headers.setContentType(mediaType);
+        headers.set("Authorization", "pgapi Mjk5OTE5OTk5MDpNQTAxOjNEMUVBOEVBRUM0NzA1MTFBMkIyNUVFMzQwRkI5ODQ4");
+        HttpEntity<String> entity = null;
+        try {
+            entity = new HttpEntity<>(objectMapper.writeValueAsString(requestDTO), headers);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        log.info("request => {}", entity.getBody());
+
+        ResponseEntity<KsnetResponse> response = restTemplate.postForEntity(CANCEL_URL, entity, KsnetResponse.class);
+
+        log.info("response => {}", response.toString());
+
+        if(!response.getStatusCode().is2xxSuccessful()){
+            log.info("KSNET 승인 취소 API 호출 실패");
+            throw new RuntimeException("서버 통신 오류 잠시 후 다시 시도해주세요.");
+        }
+
+        return response.getBody();
     }
 }

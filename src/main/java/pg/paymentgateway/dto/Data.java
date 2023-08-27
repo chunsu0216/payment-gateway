@@ -19,4 +19,5 @@ public class Data {
     private String installMonth; // 할부개월수
     private String cardType; // 카드 타입
     private String partCancelYn; // 부분취소가능여부
+    private String billingToken;
 }

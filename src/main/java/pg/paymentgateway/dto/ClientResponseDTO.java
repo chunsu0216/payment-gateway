@@ -11,14 +11,16 @@ public class ClientResponseDTO {
     private String orderName;
     private String resultCode;
     private String resultMessage;
+    private String billingToken;
 
     @Builder
-    public ClientResponseDTO(String transactionId, String orderId, String orderName, String resultCode, String resultMessage) {
+    public ClientResponseDTO(String transactionId, String orderId, String orderName, String resultCode, String resultMessage, String billingToken) {
         this.transactionId = transactionId;
         this.orderId = orderId;
         this.orderName = orderName;
         this.resultCode = resultCode;
         this.resultMessage = resultMessage;
+        this.billingToken = billingToken;
     }
 
     public ClientResponseDTO() {

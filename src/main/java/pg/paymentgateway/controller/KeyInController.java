@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import pg.paymentgateway.dto.ClientKeyInCancelDTO;
 import pg.paymentgateway.dto.ClientKeyInRequestDTO;
 import pg.paymentgateway.service.KeyInService;
 
@@ -36,6 +37,16 @@ public class KeyInController {
             method = "non-keyIn";
         }
 
-        return keyInService.oldCertification(clientRequestDTO, method);
+        return keyInService.keyIn(clientRequestDTO, method);
+    }
+
+    @PostMapping("/api/v1/card/cancel")
+    public Object cancel(@RequestBody @Validated ClientKeyInCancelDTO clientRequestDTO, BindingResult bindingResult){
+
+        if (bindingResult.hasErrors()) {
+            throw new IllegalArgumentException(bindingResult.getFieldError().getDefaultMessage());
+        }
+
+        return keyInService.cancel(clientRequestDTO);
     }
 }

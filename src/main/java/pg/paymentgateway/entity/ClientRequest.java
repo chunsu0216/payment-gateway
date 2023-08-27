@@ -21,6 +21,8 @@ public class ClientRequest extends BaseEntity{
     private String productName;
     private Long amount;
     private String cardNumber;
+    private String installment;
+    private String billingToken;
     private String expireDate;
     private String password;
     private String userInfo;
@@ -28,7 +30,7 @@ public class ClientRequest extends BaseEntity{
     private String vanId;
 
     @Builder
-    public ClientRequest(String merchantId, String orderId, String orderName, String productName, Long amount, String cardNumber, String expireDate, String password, String userInfo, String van, String vanId) {
+    public ClientRequest(String merchantId, String orderId, String orderName, String productName, Long amount, String cardNumber, String expireDate, String password, String userInfo, String van, String vanId, String installment, String billingToken) {
         this.merchantId = merchantId;
         this.orderId = orderId;
         this.orderName = orderName;
@@ -40,6 +42,8 @@ public class ClientRequest extends BaseEntity{
         this.userInfo = userInfo;
         this.van = van;
         this.vanId = vanId;
+        this.installment = installment;
+        this.billingToken = billingToken;
     }
 
     public ClientRequest() {
