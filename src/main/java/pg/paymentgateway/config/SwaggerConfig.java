@@ -42,7 +42,8 @@ public class SwaggerConfig {
         Components components = new Components()
                 .addSecuritySchemes(authorization, new SecurityScheme()
                         .name(authorization)
-                        .type(SecurityScheme.Type.APIKEY) // HTTP 방식
+                        .type(SecurityScheme.Type.HTTP) // HTTP 방식
+                        .scheme("bearer")
                         .bearerFormat("Authorization")); // 토큰 형식을 지정하는 임의의 문자(Optional)
 
         return new OpenAPI()
