@@ -18,6 +18,8 @@ import pg.paymentgateway.repository.ApproveCancelRepository;
 import pg.paymentgateway.repository.ClientRequestRepository;
 import pg.paymentgateway.repository.MerchantRepository;
 import pg.paymentgateway.repository.PayRepository;
+
+import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -52,7 +54,7 @@ public class KeyInService {
     private static final String RESULT_CANCEL_MESSAGE = "정상 취소되었습니다.";
 
     @Transactional
-    public Object keyIn(ClientKeyInRequestDTO clientRequestDTO, String method) {
+    public Object keyIn(ClientKeyInRequestDTO clientRequestDTO, String method, HttpServletRequest request) {
 
         // 유효기간 검증
         if(!this.validationExpireDate(clientRequestDTO.getExpireDate())){
@@ -75,7 +77,7 @@ public class KeyInService {
         String transactionId = "T" + UUID.randomUUID().toString();
 
         // 가맹점 ID 검증
-        Optional<Merchant> merchant = Optional.ofNullable(merchantRepository.findMerchantByMerchantId(clientRequestDTO.getMerchantId()));
+        Optional<Merchant> merchant = Optional.ofNullable(merchantRepository.findMerchantByMerchantIdAndPaymentKey(clientRequestDTO.getMerchantId(), request.getHeader("Authorization")));
 
         if(merchant.isEmpty()){
             throw new ForbiddenException(FORBIDDEN_MERCHANT);
@@ -383,10 +385,10 @@ public class KeyInService {
     }
 
     @Transactional
-    public Object cancel(ClientKeyInCancelDTO clientRequestDTO) {
+    public Object cancel(ClientKeyInCancelDTO clientRequestDTO, HttpServletRequest request) {
 
         // 가맹점 ID 검증
-        Optional<Merchant> merchant = Optional.ofNullable(merchantRepository.findMerchantByMerchantId(clientRequestDTO.getMerchantId()));
+        Optional<Merchant> merchant = Optional.ofNullable(merchantRepository.findMerchantByMerchantIdAndPaymentKey(clientRequestDTO.getMerchantId(), request.getHeader("Authorization")));
         if(merchant.isEmpty()){
             throw new ForbiddenException(FORBIDDEN_MERCHANT);
         }

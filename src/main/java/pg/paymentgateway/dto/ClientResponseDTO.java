@@ -1,9 +1,13 @@
 package pg.paymentgateway.dto;
 
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.*;
 import lombok.Data;
 
+@Builder
 @Data
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ClientResponseDTO {
 
     private String transactionId;
@@ -12,16 +16,6 @@ public class ClientResponseDTO {
     private String resultCode;
     private String resultMessage;
     private String billingToken;
-
-    @Builder
-    public ClientResponseDTO(String transactionId, String orderId, String orderName, String resultCode, String resultMessage, String billingToken) {
-        this.transactionId = transactionId;
-        this.orderId = orderId;
-        this.orderName = orderName;
-        this.resultCode = resultCode;
-        this.resultMessage = resultMessage;
-        this.billingToken = billingToken;
-    }
 
     public ClientResponseDTO() {
     }

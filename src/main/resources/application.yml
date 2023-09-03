@@ -29,5 +29,5 @@ springdoc:
   show-actuator: true
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
-  paths-to-match: /api/v1
+#  paths-to-match: /api/v1
 # org.hibernate.type: trace

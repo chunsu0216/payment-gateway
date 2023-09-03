@@ -6,5 +6,5 @@ import pg.paymentgateway.entity.Merchant;
 public interface MerchantRepository extends JpaRepository<Merchant, Long> {
 
     Merchant findMerchantByPaymentKey(String paymentKey);
-    Merchant findMerchantByMerchantId(String merchantId);
+    Merchant findMerchantByMerchantIdAndPaymentKey(String merchantId, String paymentKey);
 }

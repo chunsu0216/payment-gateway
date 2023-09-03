@@ -18,6 +18,7 @@ import pg.paymentgateway.repository.ClientRequestRepository;
 import pg.paymentgateway.repository.MerchantRepository;
 import pg.paymentgateway.repository.PayRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -46,7 +47,7 @@ public class WalletService {
     private static final String RESULT_REGISTER_MESSAGE = "정상 등록되었습니다.";
     private static final String RESULT_PAY_MESSAGE = "정상 처리되었습니다.";
 
-    public Object register(ClientWalletRegisterDTO clientRequestDTO){
+    public Object register(ClientWalletRegisterDTO clientRequestDTO, HttpServletRequest request){
 
         // 유효기간 검증
         if(!this.validationExpireDate(clientRequestDTO.getExpireDate())){
@@ -64,7 +65,7 @@ public class WalletService {
         }
 
         // 가맹점 ID 검증
-        Optional<Merchant> merchant = Optional.ofNullable(merchantRepository.findMerchantByMerchantId(clientRequestDTO.getMerchantId()));
+        Optional<Merchant> merchant = Optional.ofNullable(merchantRepository.findMerchantByMerchantIdAndPaymentKey(clientRequestDTO.getMerchantId(), request.getHeader("Authorization")));
 
         if (merchant.isEmpty()) {
             throw new ForbiddenException(FORBIDDEN_MERCHANT);
@@ -116,9 +117,9 @@ public class WalletService {
 
 
 
-    public Object pay(ClientWalletPayRequestDTO clientRequestDTO) {
+    public Object pay(ClientWalletPayRequestDTO clientRequestDTO, HttpServletRequest request) {
         // 가맹점 ID 검증
-        Optional<Merchant> merchant = Optional.ofNullable(merchantRepository.findMerchantByMerchantId(clientRequestDTO.getMerchantId()));
+        Optional<Merchant> merchant = Optional.ofNullable(merchantRepository.findMerchantByMerchantIdAndPaymentKey(clientRequestDTO.getMerchantId(), request.getHeader("Authorization")));
 
         if (merchant.isEmpty()) {
             throw new ForbiddenException(FORBIDDEN_MERCHANT);
