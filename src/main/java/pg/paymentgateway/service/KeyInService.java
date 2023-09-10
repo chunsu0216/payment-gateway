@@ -39,6 +39,7 @@ public class KeyInService {
     private final PayRepository payRepository;
     private final ObjectMapper objectMapper;
     private final ApproveCancelRepository approveCancelRepository;
+    private final RequestSaveService requestSaveService;
 
     private static final String INVALID_EXPIRE_DATE = "올바르지않은 유효기간입니다.";
     private static final String INVALID_BIRTHDAY = "올바르지않은 생년월일입니다.";
@@ -99,15 +100,12 @@ public class KeyInService {
                     break;
                 }
             }
-
             //CLIENT REQUEST INSERT
-            clientRequestRepository.save(setClientRequest(clientRequestDTO, van));
-
+            requestSaveService.saveKeyInRequest(clientRequestDTO, van);
             // KSNET API CALL
             KsnetResponse ksnetResponse = null;
 
             ksnetResponse = callKsnetAPI(transactionId, clientRequestDTO, van, method);
-
             if(!"A0200".equals(ksnetResponse.getCode())){
                 // API 응답 정상이 아닐 경우
                 return new ErrorResultDTO().builder()
@@ -281,28 +279,6 @@ public class KeyInService {
     }
 
     /**
-     * CLIENT REQUEST 내역 SAVE SETTING
-     * @param clientRequestDTO
-     * @param van
-     * @return
-     */
-    private ClientRequest setClientRequest(ClientKeyInRequestDTO clientRequestDTO, Van van) {
-        return new ClientRequest().builder()
-                .merchantId(clientRequestDTO.getMerchantId())
-                .orderId(clientRequestDTO.getOrderId())
-                .orderName(clientRequestDTO.getOrderName())
-                .productName(clientRequestDTO.getProductName())
-                .amount(clientRequestDTO.getAmount())
-                .cardNumber(clientRequestDTO.getCardNumber())
-                .expireDate(clientRequestDTO.getExpireDate())
-                .password(clientRequestDTO.getPassword())
-                .userInfo(clientRequestDTO.getUserInfo())
-                .van(van.getVan())
-                .vanId(van.getVanId())
-                .build();
-    }
-
-    /**
      * 거래승인내역 SAVE SETTING
      * @param transactionId
      * @param method
@@ -387,6 +363,9 @@ public class KeyInService {
     @Transactional
     public Object cancel(ClientKeyInCancelDTO clientRequestDTO, HttpServletRequest request) {
 
+        // CLIENT REQUSET SAVE
+        requestSaveService.saveCancelRequest(clientRequestDTO);
+
         // 가맹점 ID 검증
         Optional<Merchant> merchant = Optional.ofNullable(merchantRepository.findMerchantByMerchantIdAndPaymentKey(clientRequestDTO.getMerchantId(), request.getHeader("Authorization")));
         if(merchant.isEmpty()){
@@ -436,8 +415,20 @@ public class KeyInService {
             cancelType = "PARTIAL";
         }
 
+        List<Van> vans = merchant.get().getVans();
+        String vanId = "";
+        Van van = null;
+        String method = pay.get().getMethod();
+
+        for (Van findVan : vans) {
+            if(findVan.getMerchant().getMerchantId().equals(merchant.get().getMerchantId()) && findVan.getMethod().equals(method)){
+                van = findVan;
+                break;
+            }
+        }
+
         String transactionId = "T" + UUID.randomUUID().toString();
-        KsnetResponse ksnetResponse = callCancelAPI(setCancelDTO(pay.get(), cancelType, clientRequestDTO));
+        KsnetResponse ksnetResponse = callCancelAPI(setCancelDTO(pay.get(), cancelType, clientRequestDTO), method);
 
         if (ksnetResponse.getData().getRespCode().equals("0000")) {
             // 취소 원장 저장
@@ -499,12 +490,17 @@ public class KeyInService {
 
     }
 
-    private KsnetResponse callCancelAPI(KsnetCancelRequestDTO requestDTO){
+    private KsnetResponse callCancelAPI(KsnetCancelRequestDTO requestDTO, String method){
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         MediaType mediaType = new MediaType("application", "json", Charset.forName("UTF-8"));
         headers.setContentType(mediaType);
-        headers.set("Authorization", "pgapi Mjk5OTE5OTk5MDpNQTAxOjNEMUVBOEVBRUM0NzA1MTFBMkIyNUVFMzQwRkI5ODQ4");
+
+        if(method.equals("wallet")){
+            headers.set("Authorization", "pgapi Mjk5OTE5OTk5OTpNQTAxOkE0RTc2QkRBMzM3RENDQTk1Mjk4RkI0OTVBODREMzY5");
+        }else{
+            headers.set("Authorization", "pgapi Mjk5OTE5OTk5MDpNQTAxOjNEMUVBOEVBRUM0NzA1MTFBMkIyNUVFMzQwRkI5ODQ4");
+        }
         HttpEntity<String> entity = null;
         try {
             entity = new HttpEntity<>(objectMapper.writeValueAsString(requestDTO), headers);

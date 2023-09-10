@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@Tag(name = "간편결제 API", description = "카드 정보를 등록 후 토큰값을 이용한 간편 결제 API 입니다.")
+@Tag(name = "간편결제 API", description = "카드 정보를 등록 후 토큰값을 이용한 간편 결제 API 입니다. 실제 PG사와 연동되어있으나 테스트서버 연동임으로 실제 결제 처리되지않습니다.")
 public class WalletController {
 
     private final WalletService walletService;

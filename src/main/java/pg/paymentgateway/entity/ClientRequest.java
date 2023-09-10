@@ -16,6 +16,7 @@ public class ClientRequest extends BaseEntity{
     @Id @GeneratedValue
     private Long idx;
     private String merchantId;
+    private String transactionType;
     private String orderId;
     private String orderName;
     private String productName;
@@ -28,11 +29,14 @@ public class ClientRequest extends BaseEntity{
     private String userInfo;
     private String van;
     private String vanId;
+    private String rootTransactionId;
 
     @Builder
-    public ClientRequest(String merchantId, String orderId, String orderName, String productName, Long amount, String cardNumber, String expireDate, String password, String userInfo, String van, String vanId, String installment, String billingToken) {
+    public ClientRequest(String merchantId, String transactionType, String rootTransactionId, String orderId, String orderName, String productName, Long amount, String cardNumber, String expireDate, String password, String userInfo, String van, String vanId, String installment, String billingToken) {
         this.merchantId = merchantId;
         this.orderId = orderId;
+        this.transactionType = transactionType;
+        this.rootTransactionId = rootTransactionId;
         this.orderName = orderName;
         this.productName = productName;
         this.amount = amount;

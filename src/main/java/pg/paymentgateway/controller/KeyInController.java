@@ -20,7 +20,7 @@ import pg.paymentgateway.service.KeyInService;
 
 import javax.servlet.http.HttpServletRequest;
 
-@Tag(name = "카드 수기결제 API", description = "카드번호/유효기간/생년월일/비밀번호 등을 이용한 카드 승인 요청 API입니다.")
+@Tag(name = "카드 수기결제 API", description = "카드번호/유효기간/생년월일/비밀번호 등을 이용한 카드 승인 요청 API입니다. 실제 PG사와 연동되어있으나 테스트서버 연동임으로 실제 결제 처리되지않습니다.")
 @RestController
 @RequiredArgsConstructor
 @Slf4j

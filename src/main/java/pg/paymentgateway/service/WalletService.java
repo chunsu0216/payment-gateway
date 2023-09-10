@@ -46,6 +46,7 @@ public class WalletService {
     private static final String RESULT_CODE = "0000";
     private static final String RESULT_REGISTER_MESSAGE = "정상 등록되었습니다.";
     private static final String RESULT_PAY_MESSAGE = "정상 처리되었습니다.";
+    private final RequestSaveService requestSaveService;
 
     public Object register(ClientWalletRegisterDTO clientRequestDTO, HttpServletRequest request){
 
@@ -84,7 +85,7 @@ public class WalletService {
         }
 
         //CLIENT REQUEST INSERT
-        clientRequestRepository.save(setClientRequest(clientRequestDTO, van));
+        requestSaveService.saveWalletRequest(clientRequestDTO, van);
 
         // KSNET API CALL
         KsnetResponse ksnetResponse = null;
@@ -138,7 +139,7 @@ public class WalletService {
         }
 
         //CLIENT REQUEST INSERT
-        clientRequestRepository.save(setClientPayRequest(clientRequestDTO, van));
+        requestSaveService.saveWalletPayRequest(clientRequestDTO, van);
 
         // KSNET API CALL
         KsnetResponse ksnetResponse = null;
@@ -227,19 +228,6 @@ public class WalletService {
         return response.getBody();
     }
 
-    private ClientRequest setClientPayRequest(ClientWalletPayRequestDTO clientRequestDTO, Van van) {
-        return new ClientRequest().builder()
-                .merchantId(clientRequestDTO.getMerchantId())
-                .orderName(clientRequestDTO.getOrderName())
-                .productName(clientRequestDTO.getProductName())
-                .amount(clientRequestDTO.getAmount())
-                .installment(clientRequestDTO.getInstallment())
-                .billingToken(clientRequestDTO.getBillingToken())
-                .van(van.getVan())
-                .vanId(van.getVanId())
-                .build();
-    }
-
     private KsnetResponse callKsnetRegisterAPI(ClientWalletRegisterDTO clientRequestDTO, Van van) {
         return callRegisterAPI(new KsnetBilingRequestDTO().builder()
                 .mid(van.getVanId())
@@ -274,24 +262,6 @@ public class WalletService {
         }
 
         return response.getBody();
-    }
-
-    /**
-     * CLIENT REQUEST 내역 SAVE SETTING
-     * @param clientRequestDTO
-     * @param van
-     * @return
-     */
-    private ClientRequest setClientRequest(ClientWalletRegisterDTO clientRequestDTO, Van van) {
-        return new ClientRequest().builder()
-                .merchantId(clientRequestDTO.getMerchantId())
-                .cardNumber(clientRequestDTO.getCardNumber())
-                .expireDate(clientRequestDTO.getExpireDate())
-                .password(clientRequestDTO.getPassword())
-                .userInfo(clientRequestDTO.getUserInfo())
-                .van(van.getVan())
-                .vanId(van.getVanId())
-                .build();
     }
 
     /**
