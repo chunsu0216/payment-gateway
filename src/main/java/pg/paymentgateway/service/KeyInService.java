@@ -77,6 +77,7 @@ public class KeyInService {
         // TRANSACTION ID 생성
         String transactionId = "T" + UUID.randomUUID().toString();
 
+
         // 가맹점 ID 검증
         Optional<Merchant> merchant = Optional.ofNullable(merchantRepository.findMerchantByMerchantIdAndPaymentKey(clientRequestDTO.getMerchantId(), request.getHeader("Authorization")));
 
