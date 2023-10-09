@@ -14,7 +14,7 @@ public class ClientKeyInCancelDTO {
     @NotEmpty(message = "가맹점 ID는 필수 값입니다.")
     private String merchantId;
 
-    private String orderNumber;
+    private String orderId;
     private String transactionId;
 
     @NotNull(message = "금액은 필수 값입니다.")

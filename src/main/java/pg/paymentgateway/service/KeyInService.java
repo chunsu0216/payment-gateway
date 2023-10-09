@@ -375,11 +375,11 @@ public class KeyInService {
         }
 
         // 거래 ID 검증
-        if(clientRequestDTO.getOrderNumber().isEmpty() && clientRequestDTO.getTransactionId().isEmpty()){
+        if(clientRequestDTO.getOrderId().isEmpty() && clientRequestDTO.getTransactionId().isEmpty()){
             throw new IllegalArgumentException("가맹점 주문번호 ID 또는 승인 후 부여한 transactionId를 셋팅하셔야합니다.");
         }
 
-        Optional<Pay> pay = Optional.ofNullable(payRepository.findPayByTransactionIdOrOrderId(clientRequestDTO.getTransactionId(), clientRequestDTO.getOrderNumber()));
+        Optional<Pay> pay = Optional.ofNullable(payRepository.findPayByTransactionIdOrOrderId(clientRequestDTO.getTransactionId(), clientRequestDTO.getOrderId()));
 
         if(pay.isEmpty()){
             throw new IllegalArgumentException("원거래 ID 또는 주문번호를 확인할 수 없습니다.");
