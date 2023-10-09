@@ -75,7 +75,7 @@ public class RequestSaveService {
                 .merchantId(clientRequestDTO.getMerchantId())
                 .transactionType("cancel")
                 .rootTransactionId(clientRequestDTO.getTransactionId())
-                .orderId(clientRequestDTO.getOrderNumber())
+                .orderId(clientRequestDTO.getOrderId())
                 .amount(clientRequestDTO.getAmount())
                 .build();
     }
