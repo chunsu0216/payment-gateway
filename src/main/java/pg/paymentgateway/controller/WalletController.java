@@ -3,6 +3,7 @@ package pg.paymentgateway.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,11 +22,12 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 @RequiredArgsConstructor
 @Tag(name = "간편결제 API", description = "카드 정보를 등록 후 토큰값을 이용한 간편 결제 API 입니다. 실제 PG사와 연동되어있으나 테스트서버 연동임으로 실제 결제 처리되지않습니다.")
+@Schema(hidden = true)
 public class WalletController {
 
     private final WalletService walletService;
 
-    @Operation(summary = "카드 등록 API", description = "REQUEST HEADER에 Authorizaion : c674ccc0-2f95-11ee-bf23-f53b19ae9a8d 셋팅하셔야합니다. \n 간편결제를 위한 카드 등록 요청 API 입니다.")
+    @Operation(summary = "카드 등록 API", description = "REQUEST HEADER에 Authorizaion : c674ccc0-2f95-11ee-bf23-f53b19ae9a8d 및 merchantId : merchant01 셋팅하셔야합니다. \n 간편결제를 위한 카드 등록 요청 API 입니다.")
     @Parameters({
             @Parameter(name = "merchantId", description = "가맹점 ID", example = "merchant01"),
             @Parameter(name = "cardNumber", description = "카드번호(-)제외", example = "1234123412341234"),
@@ -39,7 +41,7 @@ public class WalletController {
         return walletService.register(clientRequestDTO, request);
     }
 
-    @Operation(summary = "간편 결제 승인 API", description = "REQUEST HEADER에 Authorizaion : c674ccc0-2f95-11ee-bf23-f53b19ae9a8d 셋팅하셔야합니다. \n 카드 등록 후 결제 승인 API입니다.")
+    @Operation(summary = "간편 결제 승인 API", description = "REQUEST HEADER에 Authorizaion : c674ccc0-2f95-11ee-bf23-f53b19ae9a8d 및 merchantId : merchant01 셋팅하셔야합니다. \n 카드 등록 후 결제 승인 API입니다.")
     @Parameters({
             @Parameter(name = "merchantId", description = "가맹점 ID", example = "merchant01"),
             @Parameter(name = "orderName", description = "주문자명", example = "홍길동"),

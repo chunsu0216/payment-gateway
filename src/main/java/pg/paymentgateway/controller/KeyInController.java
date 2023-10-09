@@ -3,6 +3,7 @@ package pg.paymentgateway.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,11 +25,12 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
+@Schema(hidden = true)
 public class KeyInController {
 
     private final KeyInService keyInService;
 
-    @Operation(summary = "구인증 결제", description = "REQUEST HEADER에 Authorizaion : c674ccc0-2f95-11ee-bf23-f53b19ae9a8d 셋팅하셔야합니다. \n 카드번호/유효기간/생년월일/비밀번호를 이용한 카드 승인 요청 API 입니다.")
+    @Operation(summary = "구인증 결제", description = "REQUEST HEADER에 Authorizaion : c674ccc0-2f95-11ee-bf23-f53b19ae9a8d 및 merchantId : merchant01 셋팅하셔야합니다. \n 카드번호/유효기간/생년월일/비밀번호를 이용한 카드 승인 요청 API 입니다.")
     @Parameters({
             @Parameter(name = "merchantId", description = "가맹점 ID", example = "merchant01"),
             @Parameter(name = "orderId", description = "가맹점이 부여한 거래 ID", example = "order_20230903121212"),
@@ -50,7 +52,7 @@ public class KeyInController {
 
         return keyInService.keyIn(clientRequestDTO, "old-keyIn", request);
     }
-    @Operation(summary = "비인증 결제", description = "REQUEST HEADER에 Authorizaion : c674ccc0-2f95-11ee-bf23-f53b19ae9a8d 셋팅하셔야합니다. \n 카드번호/유효기간을 이용한 카드 승인 요청 API 입니다.")
+    @Operation(summary = "비인증 결제", description = "REQUEST HEADER에 Authorizaion : c674ccc0-2f95-11ee-bf23-f53b19ae9a8d 및 merchantId : merchant01 셋팅하셔야합니다. \n 카드번호/유효기간을 이용한 카드 승인 요청 API 입니다.")
     @Parameters({
             @Parameter(name = "merchantId", description = "가맹점 ID", example = "merchant01"),
             @Parameter(name = "orderId", description = "가맹점이 부여한 거래 ID", example = "order_20230903121212"),
@@ -71,7 +73,7 @@ public class KeyInController {
 
         return keyInService.keyIn(clientRequestDTO, "non-keyIn", request);
     }
-    @Operation(summary = "결제 취소", description = "REQUEST HEADER에 Authorizaion : c674ccc0-2f95-11ee-bf23-f53b19ae9a8d 셋팅하셔야합니다. \n 카드 승인 후 결제 취소 요청 API입니다.")
+    @Operation(summary = "결제 취소", description = "REQUEST HEADER에 Authorizaion : c674ccc0-2f95-11ee-bf23-f53b19ae9a8d 및 merchantId : merchant01 셋팅하셔야합니다. \n 카드 승인 후 결제 취소 요청 API입니다.")
     @Parameters({
             @Parameter(name = "merchantId", description = "가맹점 ID", example = "merchant01"),
             @Parameter(name = "orderNumber", description = "가맹점이 부여한 원거래 ID", example = "order_20230903121212"),

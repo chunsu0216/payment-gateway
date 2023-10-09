@@ -2,6 +2,8 @@ package pg.paymentgateway.dto;
 
 import lombok.Data;
 import org.hibernate.validator.constraints.CreditCardNumber;
+
+import javax.annotation.RegEx;
 import javax.validation.constraints.*;
 
 @Data
@@ -35,6 +37,7 @@ public class ClientKeyInRequestDTO {
 
     @NotNull(message = "유효기간은 필수 값입니다.")
     @NotEmpty(message = "유효기간은 필수 값입니다.")
+    @Pattern(regexp = "^[0-9]*$", message = "숫자만 입력 가능합니다.")
     private String expireDate;
 
     //@NotNull(message = "비밀번호 앞2자리는 필수 값입니다.")

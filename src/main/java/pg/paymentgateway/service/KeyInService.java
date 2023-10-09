@@ -352,6 +352,7 @@ public class KeyInService {
      * @return
      */
     private boolean validationExpireDate(String expireDate) {
+
         String yyMM = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMM"));
 
         if(Integer.parseInt(expireDate) < Integer.parseInt(yyMM)){
