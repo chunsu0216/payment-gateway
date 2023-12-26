@@ -11,7 +11,6 @@ import java.util.List;
 @Entity
 @Table(name = "PG_MERCHANT")
 @Getter
-@Setter
 public class Merchant extends BaseEntity{
 
     @Id @GeneratedValue
