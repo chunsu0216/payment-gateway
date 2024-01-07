@@ -54,6 +54,7 @@ public class Ksnet implements VanService {
                 resultMap.put("tradeDateTime", ksnetResponse.getData().getTradeDateTime());
                 resultMap.put("installMonth", ksnetResponse.getData().getInstallMonth());
                 resultMap.put("expiryDate", ksnetResponse.getData().getExpiryDate());
+                resultMap.put("cardNumber", ksnetResponse.getData().getCardNumb());
                 resultMap.put("vanTrxId", ksnetResponse.getData().getTid());
             }
             resultMap.put("resultCode", resultCode);

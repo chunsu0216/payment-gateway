@@ -1,10 +1,20 @@
-package pg.paymentgateway.service.redis;
+package pg.paymentgateway.entity;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "notification")
+@Getter
 public class Notification {
+    @Id
+    @GeneratedValue
+    private Long idx;
     private String transactionId;
     private String orderId;
     private String orderName;
@@ -20,12 +30,13 @@ public class Notification {
     private String installMonth;
     private String cardType;
     private String tradeDateTime;
+    private Integer retryCount;
 
     public Notification() {
 
     }
     @Builder
-    public Notification(String transactionId, String orderId, String orderName, String merchantId, Long amount, String issuerCardType, String issuerCardName, String purchaseCardType, String purchaseCardName, String approvalNumber, String cardNumber, String expiryDate, String installMonth, String cardType, String tradeDateTime) {
+    public Notification(String transactionId, String orderId, String orderName, String merchantId, Long amount, String issuerCardType, String issuerCardName, String purchaseCardType, String purchaseCardName, String approvalNumber, String cardNumber, String expiryDate, String installMonth, String cardType, String tradeDateTime, int retryCount) {
         this.transactionId = transactionId;
         this.orderId = orderId;
         this.orderName = orderName;
@@ -41,5 +52,10 @@ public class Notification {
         this.installMonth = installMonth;
         this.cardType = cardType;
         this.tradeDateTime = tradeDateTime;
+        this.retryCount = retryCount;
+    }
+
+    public void updateRetryCount(){
+        this.retryCount = retryCount + 1;
     }
 }

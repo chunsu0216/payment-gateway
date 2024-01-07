@@ -1,30 +1,20 @@
 package pg.paymentgateway.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 import pg.paymentgateway.dto.*;
 import pg.paymentgateway.entity.*;
 import pg.paymentgateway.exception.ForbiddenException;
-import pg.paymentgateway.repository.ApproveCancelRepository;
-import pg.paymentgateway.repository.ClientRequestRepository;
-import pg.paymentgateway.repository.MerchantRepository;
-import pg.paymentgateway.repository.PayRepository;
-import pg.paymentgateway.service.redis.Notification;
+import pg.paymentgateway.repository.*;
+import pg.paymentgateway.entity.Notification;
 import pg.paymentgateway.service.redis.RedisPublisher;
 import pg.paymentgateway.service.van.VanService;
+import pg.paymentgateway.service.webhook.WebHookService;
 
 import javax.servlet.http.HttpServletRequest;
-import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -45,8 +35,8 @@ public class KeyInService {
     private final ApproveCancelRepository approveCancelRepository;
     private final RequestSaveService requestSaveService;
     private final Map<String, VanService> vanServiceMap;
-    private final ChannelTopic channelTopic;
-    private final RedisPublisher redisPublisher;
+    private final WebHookService webHookService;
+    private final NotificationService notificationService;
 
     private static final String INVALID_EXPIRE_DATE = "올바르지않은 유효기간입니다.";
     private static final String INVALID_BIRTHDAY = "올바르지않은 생년월일입니다.";
@@ -125,8 +115,8 @@ public class KeyInService {
                     // PAY INSERT
                     Pay pay = payRepository.save(setKeyInPay(transactionId, method, clientRequestDTO, resultMap, van, merchant));
 
-                    // 가맹점 거래 결과 노티 전송(Redis)
-                    redisPublisher.publish(channelTopic, setNotification(resultMap, pay));
+                    // 가맹점 거래 결과 노티 데이터 생성(Redis)
+                    notificationService.createNotification(resultMap, pay);
                 }
             }
         }
@@ -137,27 +127,6 @@ public class KeyInService {
                 .resultCode(RESULT_CODE)
                 .resultMessage(RESULT_MESSAGE)
                 .build();
-    }
-
-    private Notification setNotification(Map<String, Object> resultMap, Pay pay) {
-        return new Notification().builder()
-                .transactionId(pay.getTransactionId())
-                .orderId(pay.getOrderId())
-                .orderName(pay.getOrderName())
-                .merchantId(pay.getMerchant().getMerchantId())
-                .amount(pay.getAmount())
-                .issuerCardType((String) resultMap.get("issuerCardType"))
-                .issuerCardName((String) resultMap.get("issuerCardName"))
-                .purchaseCardType((String) resultMap.get("purchaseCardType"))
-                .purchaseCardName((String) resultMap.get("purchaseCardName"))
-                .approvalNumber((String) resultMap.get("approvalNumber"))
-                .expiryDate((String) resultMap.get("expiryDate"))
-                .installMonth((String) resultMap.get("installMonth"))
-                .cardType((String) resultMap.get("cardType"))
-                .tradeDateTime((String) resultMap.get("tradeDateTime"))
-                .build();
-
-
     }
 
     /**

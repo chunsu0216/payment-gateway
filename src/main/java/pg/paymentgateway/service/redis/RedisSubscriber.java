@@ -2,11 +2,11 @@ package pg.paymentgateway.service.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Service;
+import pg.paymentgateway.entity.Notification;
 
 import java.io.IOException;
 
