@@ -25,9 +25,9 @@ public class WebHookService {
     public void webhook() {
         log.info("::: webhook service start :::");
         List<Notification> notifications = notificationRepository.findByRetryCount();
-        for (Notification notification : notifications) {
+        notifications.forEach(notification -> {
             redisPublisher.publish(channelTopic, notification);
             notification.updateRetryCount();
-        }
+        });
     }
 }
