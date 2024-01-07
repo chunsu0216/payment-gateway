@@ -114,9 +114,12 @@ public class KeyInService {
                 }else if("0000".equals(resultCode)){
                     // PAY INSERT
                     Pay pay = payRepository.save(setKeyInPay(transactionId, method, clientRequestDTO, resultMap, van, merchant));
-
-                    // 가맹점 거래 결과 노티 데이터 생성(Redis)
-                    notificationService.createNotification(resultMap, pay);
+                    try{
+                        // 가맹점 거래 결과 노티 데이터 생성(Redis)
+                        notificationService.createNotification(resultMap, pay);
+                    }catch (Exception e){
+                        log.error("noti error : {}", e);
+                    }
                 }
             }
         }
