@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import pg.paymentgateway.interceptor.Interceptor;
-import pg.paymentgateway.service.TestService;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -18,11 +17,6 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(interceptor)
                 //.excludePathPatterns("/css/**", "/image/**", "/js/**", "/swagger-ui.html")
                 .addPathPatterns("/api/**");
-    }
-
-    @Bean
-    public TestService testService() {
-        return new TestService();
     }
 
     @Bean
